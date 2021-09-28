@@ -21,27 +21,15 @@ module.exports.getCountPost = function (req, res) {
 };
 
 module.exports.getInformation = function (req, res) {
-  //console.log(req.jwtDecoded.data._id);
-  const id = req.query._id;
+  console.log(req.jwtDecoded.data._id);
+  const id = req.jwtDecoded.data._id;
   Users.findOne({ _id: id })
     .then((result) => {
       //console.log(result);
       var userInfor = result.toObject();
       Reflect.deleteProperty(userInfor, "password");
-      Reflect.deleteProperty(userInfor, "__v");
-      Post.countDocuments({ user_id: id })
-        .then((count) => {
-          userInfor.count_post = count;
-          return res
-            .status(200)
-            .json({ status: 200, data: userInfor, message: "success" });
-        })
-        .catch((err) => {
-          return res
-            .status(500)
-            .json({ status: 500, data: err, message: "error" });
-        });
-      // return res.status(200).json({status:200,data:userInfor,message:"success"});
+  
+      return res.status(200).json({status:200,data:userInfor,message:"success"});
     })
     .catch((err) => {
       return res.status(500).send(err);

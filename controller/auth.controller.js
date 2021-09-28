@@ -7,12 +7,7 @@ const helps = require('../helpers/jwt.helpers');
 const accessTokenLife = process.env.ACCESS_TOKEN_LIFE;
 const accessTokenSecret = process.env.ACCESS_TOKEN_SECRET;
 
-module.exports.auth = function (req, res) {
-    res.render('auth/listUser');
-}
-module.exports.login = function (req, res) {
-    res.render('auth/login', { errors: '0', values: '' });
-}
+
 module.exports.postLogin = function (req, res) {
     const email = req.body.email;
     const password = req.body.password;
@@ -20,7 +15,6 @@ module.exports.postLogin = function (req, res) {
     Users.findOne({ email: email })
         .then(user => {
             if (!user) {
-                //return res.render('auth/login',{errors:'Email không tồn tại', values:email});
                 return res.status(403).json({ status: 403, data: {}, message: "Email không tồn tại" });
             }
             bcrypt.compare(password, user.password)
@@ -28,16 +22,12 @@ module.exports.postLogin = function (req, res) {
                     if (doMatch) {
                         return helps.generateToken(user, accessTokenSecret, accessTokenLife); 
                     }
-                    //return res.render('auth/login',{errors:'Mật khẩu không đúng', values:email});
                     return res.status(401).json({ status: 401, data: {}, message: "Invalid password." });
                 })
-                .then(accessToken =>{
-                    //console.log(accessToken);                  
+                .then(accessToken =>{               
                     var userLogin = user.toObject();  
                     userLogin.accessToken = accessToken;      
-                    Reflect.deleteProperty(userLogin, 'password');
-                    Reflect.deleteProperty(userLogin, '__v');
-                    //console.log(userLogin);              
+                    Reflect.deleteProperty(userLogin, 'password');        
                     return res.status(200).json({status: 200, data: userLogin, message: "suscess"});
                 })
                 .catch(err => {
@@ -50,27 +40,18 @@ module.exports.postLogin = function (req, res) {
             return res.status(500).json({ data: err });
         });
 }
-module.exports.logout = function (req, res) {
-    res.clearCookie('userId');
-    //res.redirect('/');
-    return res.status(200).json({ data: "suscess" });
-}
-module.exports.register = function (req, res) {
-    res.render('auth/register', { errors: "0", values: "" });
-}
+
 module.exports.CheckEmail = function (req, res) {
     var email = req.body.email;   
     Users.findOne({ email: email })
         .then(userDoc => {
             if (userDoc) {
-                var error = "email " + email + " đã tồn tại.";
-                //res.render('auth/register', { errors : error});               
+                var error = "email " + email + " đã tồn tại.";            
                 return res.status(400).json({ status: 400, data: {}, message: error });
             }
             console.log(password);
         })       
         .then(result => {
-            //res.redirect('/auth/login');
             return res.status(200).json({ data: "email có thể sử dụng" });
         })
         .catch(err => {           
@@ -79,16 +60,14 @@ module.exports.CheckEmail = function (req, res) {
 }
 
 module.exports.postRegister = function (req, res) {
-    const { email, first_name,last_name,phone,gender ,address,password } = req.body;
+    const { email, password } = req.body;
     var user = req.body;   
     Users.findOne({ email: email })
         .then(userDoc => {
             if (userDoc) {
-                var error = "email " + email + " đã tồn tại.";
-                //res.render('auth/register', { errors : error});               
+                var error = "email " + email + " đã tồn tại.";            
                 return res.status(500).json({ status: 500, data: {}, message: error });
             }
-            //console.log(password);
             return bcrypt.hash(password, 12);
         })
         .then(hashPassword => {
@@ -96,7 +75,6 @@ module.exports.postRegister = function (req, res) {
             return Users.create(user);
         })
         .then(result => {
-            //res.redirect('/auth/login');
             var user = result.toObject();
             user.accessToken = helps.generateToken(user, accessTokenSecret, accessTokenLife);
             Reflect.deleteProperty(user, 'password');

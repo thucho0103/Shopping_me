@@ -6,8 +6,6 @@ var controller = require('../controller/auth.controller');
 //var passport = require('passport');
 //const passportConfig = require('../middlewares/passport.middleware');
 
-route.get('/',controller.auth);
-
 route.post('/login',controller.postLogin);
 
 route.post('/register',
